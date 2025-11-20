@@ -28,34 +28,31 @@
 
 ## API Endpoint
 
-**POST** `/api/webhook.php`
+**GET** `/api/webhook.php`
 
-**Headers:**
+**Параметры:**
+
+| Параметр | Обязательный | Описание |
+|----------|-------------|----------|
+| `apikey` | ✅ Да | API Secret |
+| `pixel_id` | ✅ Да | ID пикселя |
+| `token` | ✅ Да | Access Token пикселя |
+| `event_type` | Нет | `purchase` или `lead` (по умолчанию `purchase`) |
+| `email` | Нет | Email пользователя |
+| `phone` | Нет | Телефон |
+| `first_name` | Нет | Имя |
+| `last_name` | Нет | Фамилия |
+| `value` | Нет | Сумма покупки |
+| `currency` | Нет | Валюта (по умолчанию USD) |
+| `event_source_url` | Нет | URL источника |
+| `fbc` | Нет | Facebook Click ID |
+| `fbp` | Нет | Facebook Browser ID |
+
+**Пример запроса:**
 
 ```
-Content-Type: application/json
-Authorization: Bearer YOUR_API_SECRET
+https://facebook.sasypua.com/api/webhook.php?apikey=YOUR_API_SECRET&pixel_id=1572575650860967&token=EAAWBzv...&event_type=lead&email=user@example.com
 ```
-
-**Body:**
-
-```json
-{
-  "pixel_id": "1572575650860967",
-  "event_type": "purchase",
-  "event_data": {
-    "email": "user@example.com",
-    "value": 99.99,
-    "currency": "USD"
-  }
-}
-```
-
-**Event types:**
-- `purchase` - покупка (по умолчанию)
-- `lead` - лид
-
-**Все параметры опциональны**, кроме `pixel_id`
 
 ## Структура
 
@@ -97,23 +94,42 @@ return [
 3. Настройте веб-сервер (Apache/Nginx)
 4. Включите HTTPS
 
-## Пример использования
+## Примеры использования
+
+### JavaScript
 
 ```javascript
-fetch('https://yourdomain.com/api/webhook.php', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer YOUR_API_SECRET'
-  },
-  body: JSON.stringify({
-    pixel_id: '1572575650860967',
-    event_type: 'purchase',
-    event_data: {
-      email: 'user@example.com',
-      value: 99.99,
-      currency: 'USD'
-    }
-  })
+const params = new URLSearchParams({
+  apikey: 'YOUR_API_SECRET',
+  pixel_id: '1572575650860967',
+  token: 'EAAWBzv...',
+  event_type: 'lead',
+  email: 'user@example.com'
 });
+
+fetch(`https://facebook.sasypua.com/api/webhook.php?${params}`)
+  .then(res => res.json())
+  .then(data => console.log(data));
+```
+
+### PHP
+
+```php
+$url = 'https://facebook.sasypua.com/api/webhook.php?' . http_build_query([
+    'apikey' => 'YOUR_API_SECRET',
+    'pixel_id' => '1572575650860967',
+    'token' => 'EAAWBzv...',
+    'event_type' => 'purchase',
+    'email' => 'user@example.com',
+    'value' => 99.99
+]);
+
+$result = file_get_contents($url);
+echo $result;
+```
+
+### cURL
+
+```bash
+curl "https://facebook.sasypua.com/api/webhook.php?apikey=YOUR_API_SECRET&pixel_id=1572575650860967&token=EAAWBzv...&event_type=lead&email=test@example.com"
 ```

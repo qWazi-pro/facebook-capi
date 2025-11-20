@@ -118,38 +118,40 @@ function sendFacebookEvent($pixelId, $accessToken, $eventType, $eventData) {
     return ['success' => true, 'response' => $responseData];
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    respondError('Method not allowed', 405);
-}
-
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-$apiKey = str_replace('Bearer ', '', $authHeader);
+$apiKey = $_GET['apikey'] ?? '';
 
 if ($apiKey !== $apiSecret) {
     respondError('Unauthorized', 401);
 }
 
-$input = file_get_contents('php://input');
-$data = json_decode($input, true);
-
-if (json_last_error() !== JSON_ERROR_NONE) {
-    respondError('Invalid JSON');
-}
-
-if (empty($data['pixel_id'])) {
+if (empty($_GET['pixel_id'])) {
     respondError('pixel_id is required');
 }
 
-$pixelId = $data['pixel_id'];
-$eventType = $data['event_type'] ?? 'purchase';
-$eventData = $data['event_data'] ?? [];
-
-if (!isset($pixelTokens[$pixelId])) {
-    error_log("Unknown pixel_id: {$pixelId}");
-    respondError('Unknown pixel_id', 404);
+if (empty($_GET['token'])) {
+    respondError('token is required');
 }
 
-$accessToken = $pixelTokens[$pixelId];
+$pixelId = $_GET['pixel_id'];
+$accessToken = $_GET['token'];
+$eventType = $_GET['event_type'] ?? 'purchase';
+
+$eventData = [];
+if (!empty($_GET['email'])) $eventData['email'] = $_GET['email'];
+if (!empty($_GET['phone'])) $eventData['phone'] = $_GET['phone'];
+if (!empty($_GET['first_name'])) $eventData['first_name'] = $_GET['first_name'];
+if (!empty($_GET['last_name'])) $eventData['last_name'] = $_GET['last_name'];
+if (!empty($_GET['value'])) $eventData['value'] = (float)$_GET['value'];
+if (!empty($_GET['currency'])) $eventData['currency'] = $_GET['currency'];
+if (!empty($_GET['event_source_url'])) $eventData['event_source_url'] = $_GET['event_source_url'];
+if (!empty($_GET['fbc'])) $eventData['fbc'] = $_GET['fbc'];
+if (!empty($_GET['fbp'])) $eventData['fbp'] = $_GET['fbp'];
+
+$data = [
+    'pixel_id' => $pixelId,
+    'event_type' => $eventType,
+    'event_data' => $eventData
+];
 
 $result = sendFacebookEvent($pixelId, $accessToken, $eventType, $eventData);
 

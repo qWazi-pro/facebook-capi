@@ -19,38 +19,36 @@ document.getElementById('testEventType').addEventListener('change', (e) => {
 document.getElementById('testForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const pixelId = document.getElementById('testPixelSelect').value;
+    const pixelSelect = document.getElementById('testPixelSelect').value;
+    const selectedPixel = pixels.find(p => p.id === pixelSelect);
+    
+    if (!selectedPixel) {
+        showMessage('testMessage', '❌ Pixel not found', 'error');
+        return;
+    }
+    
     const eventType = document.getElementById('testEventType').value;
     const email = document.getElementById('testEmail').value;
     const value = document.getElementById('testValue').value;
     const currency = document.getElementById('testCurrency').value;
     
-    const eventData = {
-        event_source_url: window.location.href
-    };
+    const params = new URLSearchParams({
+        apikey: apiSecret,
+        pixel_id: selectedPixel.id,
+        token: selectedPixel.token,
+        event_type: eventType
+    });
     
-    if (email) eventData.email = email;
+    if (email) params.append('email', email);
     if (eventType === 'purchase') {
-        if (value) eventData.value = parseFloat(value);
-        if (currency) eventData.currency = currency;
+        if (value) params.append('value', value);
+        if (currency) params.append('currency', currency);
     }
     
     showMessage('testMessage', 'Sending...', 'success');
     
     try {
-        const response = await fetch('/api/webhook.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiSecret}`
-            },
-            body: JSON.stringify({
-                pixel_id: pixelId,
-                event_type: eventType,
-                event_data: eventData
-            })
-        });
-        
+        const response = await fetch(`/api/webhook.php?${params}`);
         const data = await response.json();
         
         if (data.success) {
