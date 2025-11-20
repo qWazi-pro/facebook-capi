@@ -36,7 +36,7 @@
 |----------|-------------|----------|
 | `apikey` | ✅ Да | API Secret |
 | `pixel_id` | ✅ Да | ID пикселя |
-| `token` | ✅ Да | Access Token пикселя |
+| `token` | Нет | Access Token пикселя (если не передан, берется из config.php) |
 | `event_type` | Нет | `purchase` или `lead` (по умолчанию `purchase`) |
 | `email` | Нет | Email пользователя |
 | `phone` | Нет | Телефон |

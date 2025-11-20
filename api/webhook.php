@@ -118,7 +118,7 @@ function sendFacebookEvent($pixelId, $accessToken, $eventType, $eventData) {
     return ['success' => true, 'response' => $responseData];
 }
 
-$apiKey = $_GET['apikey'] ?? '';
+$apiKey = $_GET['apikey'] ?? $_GET['apiKey'] ?? '';
 
 if ($apiKey !== $apiSecret) {
     respondError('Unauthorized', 401);
@@ -128,12 +128,17 @@ if (empty($_GET['pixel_id'])) {
     respondError('pixel_id is required');
 }
 
-if (empty($_GET['token'])) {
-    respondError('token is required');
+$pixelId = $_GET['pixel_id'];
+
+if (!empty($_GET['token'])) {
+    $accessToken = $_GET['token'];
+} else {
+    if (!isset($pixelTokens[$pixelId])) {
+        respondError('token is required or pixel not configured', 400);
+    }
+    $accessToken = $pixelTokens[$pixelId];
 }
 
-$pixelId = $_GET['pixel_id'];
-$accessToken = $_GET['token'];
 $eventType = $_GET['event_type'] ?? 'purchase';
 
 $eventData = [];
